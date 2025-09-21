@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cofre del Tesoro Mágico</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #1a237e, #424242);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        h1 {
+            color: #ffeb3b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 90%;
+            width: 500px;
+        }
+
+        #creador {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            resize: vertical;
+            font-size: 1rem;
+            background-color: #f0f4c3;
+            color: #333;
+        }
+
+        button {
+            background-color: #ffeb3b;
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 235, 59, 0.5);
+        }
+
+        #url-container {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #url-link {
+            word-wrap: break-word;
+            background-color: #c5e1a5;
+            color: #333;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px dashed #7cb342;
+        }
+
+        .cofre {
+            width: 150px;
+            height: 100px;
+            background-color: #8b4513;
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.5s;
+            margin-top: 50px;
+        }
+        .cofre:hover {
+            transform: scale(1.1);
+        }
+
+        .cofre::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 30px;
+            background-color: #6d3311;
+            border-radius: 15px 15px 0 0;
+            border-bottom: 5px solid #ffeb3b;
+            transition: transform 1s;
+            transform-origin: bottom;
+        }
+
+        .cofre.abierto::before {
+            transform: translateX(-50%) rotateX(180deg);
+        }
+        
+        #mensaje-secreto {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fffde7;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 1.2rem;
+            max-width: 80%;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Cofre del Tesoro Mágico</h1>
+
+        <div id="creador">
+            <p>Escribe tu mensaje secreto y crea tu cofre:</p>
+            <textarea id="mensajeInput" placeholder="Escribe aquí tu mensaje..."></textarea>
+            <button onclick="crearCofre()">Crear Cofre</button>
+
+            <div id="url-container">
+                <p>¡Cofre creado! Comparte este enlace para que abran tu mensaje:</p>
+                <code id="url-link"></code>
+                <button onclick="copiarUrl()">Copiar URL</button>
+            </div>
+        </div>
+
+        <div id="visualizador" style="display: none;">
+            <p>¡Has encontrado un cofre del tesoro! Haz clic para abrirlo.</p>
+            <div class="cofre" onclick="abrirCofre()"></div>
+            <div id="mensaje-secreto"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const mensajeCodificado = params.get('msg');
+            if (mensajeCodificado) {
+                document.getElementById('creador').style.display = 'none';
+                document.getElementById('visualizador').style.display = 'block';
+                const mensajeDecodificado = atob(mensajeCodificado);
+                document.getElementById('mensaje-secreto').textContent = mensajeDecodificado;
+            } else {
+                document.getElementById('creador').style.display = 'block';
+                document.getElementById('visualizador').style.display = 'none';
+            }
+        });
+
+        function crearCofre() {
+            const mensaje = document.getElementById('mensajeInput').value;
+            if (mensaje.trim() === '') {
+                alert('¡Por favor, escribe un mensaje primero!');
+                return;
+            }
+            const mensajeCodificado = btoa(mensaje);
+            const urlBase = window.location.origin + window.location.pathname;
+            const urlCompleta = `${urlBase}?msg=${mensajeCodificado}`;
+            
+            document.getElementById('url-link').textContent = urlCompleta;
+            document.getElementById('url-container').style.display = 'block';
+        }
+
+        function copiarUrl() {
+            const urlText = document.getElementById('url-link').textContent;
+            navigator.clipboard.writeText(urlText).then(() => {
+                alert('URL copiada al portapapeles!');
+            }).catch(err => {
+                alert('Error al copiar: ' + err);
+            });
+        }
+
+        function abrirCofre() {
+            const cofre = document.querySelector('.cofre');
+            const mensaje = document.getElementById('mensaje-secreto');
+            
+            cofre.classList.add('abierto');
+            setTimeout(() => {
+                mensaje.style.display = 'block';
+            }, 1000); 
+        }
+    </script>
+</body>
+</html>
